@@ -1,0 +1,58 @@
+/* Custom auth/action styling hooked into the header */
+.header .auth-actions {
+  gap: 0.5rem;
+}
+
+.header .auth-btn {
+  font-weight: 600;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  color: var(--contrast-color);
+  padding: 8px 16px;
+  transition: all 0.2s ease;
+}
+
+.header .auth-btn:hover {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--contrast-color);
+}
+
+.header .auth-register {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--contrast-color);
+  padding: 10px 20px;
+}
+
+.header .auth-register:hover {
+  filter: brightness(0.95);
+}
+
+.header .auth-admin {
+  border-color: rgba(255, 255, 255, 0.85);
+}
+
+.header .auth-username {
+  color: var(--contrast-color);
+  letter-spacing: 0.01em;
+}
+
+/* Keep contrast when header sticks to a light background on scroll */
+body.scrolled .header .auth-btn,
+.auth-actions.scrolled .auth-btn {
+  border-color: var(--nav-color);
+  color: var(--nav-color);
+}
+
+body.scrolled .header .auth-register,
+.auth-actions.scrolled .auth-register {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--contrast-color);
+}
+
+body.scrolled .header .auth-username,
+.auth-actions.scrolled .auth-username {
+  color: var(--nav-color);
+}
