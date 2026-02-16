@@ -1,13 +1,17 @@
-FROM php:8.2-fpm
+FROM php:8.3-fpm
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        git unzip libpq-dev libzip-dev libonig-dev libxml2-dev locales && \
-    docker-php-ext-install pdo pdo_pgsql zip && \
-    rm -rf /var/lib/apt/lists/*
-
-WORKDIR /var/www/html
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git unzip locales \
+    libpq-dev libzip-dev \
+    libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
+    libonig-dev libxml2-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_pgsql zip gd \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+RUN composer --version
+
+WORKDIR /var/www/html
 
 CMD ["php-fpm"]

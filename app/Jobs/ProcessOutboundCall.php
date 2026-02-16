@@ -4,8 +4,7 @@ namespace App\Jobs;
 
 use App\Models\CallBatch;
 use App\Models\OutboundCall;
-use App\Services\AsteriskAriClient;
-use App\Services\TtsService;
+use App\Services\OutboundCallAriService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -24,7 +23,7 @@ class ProcessOutboundCall implements ShouldQueue
     {
     }
 
-    public function handle(AsteriskAriClient $ariClient, TtsService $ttsService): void
+    public function handle(OutboundCallAriService $ariService): void
     {
         $call = DB::transaction(function () {
             $call = OutboundCall::query()
@@ -41,20 +40,10 @@ class ProcessOutboundCall implements ShouldQueue
         });
 
         try {
-            $ttsPath = $call->tts_audio_path ?? $ttsService->synthesizeForCall($call);
-            $call->update([
-                'tts_audio_path' => $ttsPath,
-            ]);
-
-            $response = $ariClient->originateAndPlay(
-                phoneNumber: $call->phone_number,
-                playbackPath: $ttsPath,
-                callId: (string) $call->id
-            );
+            $response = $ariService->originate($call);
 
             $call->update([
                 'status' => OutboundCall::STATUS_COMPLETED,
-                'last_response' => $response,
                 'completed_at' => now(),
             ]);
 

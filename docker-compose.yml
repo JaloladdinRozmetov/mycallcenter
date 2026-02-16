@@ -5,9 +5,10 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
+    user: "${UID}:${GID}"
+    command: ["php-fpm"]
     volumes:
       - .:/var/www/html
-      - ./storage:/var/www/html/storage
     env_file:
       - .env.develop
     depends_on:
@@ -19,16 +20,41 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    command: php artisan queue:work --tries=1 --sleep=1
+    user: "${UID}:${GID}"
+    command: ["php", "artisan", "queue:work", "--tries=1", "--sleep=1"]
     volumes:
       - .:/var/www/html
-      - ./storage:/var/www/html/storage
     env_file:
       - .env.develop
     depends_on:
       - postgres
     networks:
       - callnet
+
+  # одноразовый сервис: поставить зависимости + миграции
+  init:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    user: "${UID}:${GID}"
+    command: >
+      bash -lc "
+      composer install
+      && php artisan key:generate --force
+      && php artisan config:clear
+      && php artisan cache:clear
+      && php artisan migrate --force
+      && php artisan storage:link
+      "
+    volumes:
+      - .:/var/www/html
+    env_file:
+      - .env.develop
+    depends_on:
+      - postgres
+    networks:
+      - callnet
+    restart: "no"
 
   nginx:
     image: nginx:1.25
@@ -51,7 +77,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
     networks:
       - callnet
 
